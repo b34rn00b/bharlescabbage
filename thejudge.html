@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Pookie | A ❤️ T</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Dancing+Script:wght@700&family=Parisienne&display=swap');
+
+        :root {
+            --pookie-pink: #ff85a2;
+            --pookie-dark: #b83280;
+        }
+
+        body {
+            background: linear-gradient(135deg, #fff5f5 0%, #fed7e2 100%);
+            color: var(--pookie-dark);
+            font-family: 'Fredoka', sans-serif;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- SMOOTH TRANSITIONS --- */
+        .fade-exit {
+            opacity: 0;
+            transform: scale(1.1);
+            filter: blur(10px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #valentineContent,
+        #letterPage {
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+        }
+
+        /* --- LOCK SCREEN & TYPEWRITER --- */
+        #typewriter-text {
+            font-size: 1.8rem;
+            text-align: center;
+            color: var(--pookie-dark);
+            font-weight: 600;
+            border-right: 3px solid #fbb6ce;
+            white-space: nowrap;
+            overflow: hidden;
+            width: 0;
+        }
+
+        /* --- BUTTON ANIMATIONS --- */
+        #yesButton {
+            background: var(--pookie-pink);
+            animation: heartbeat 1.5s infinite;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes heartbeat {
+            0% {
+                transform: scale(1);
+            }
+
+            14% {
+                transform: scale(1.05);
+            }
+
+            28% {
+                transform: scale(1);
+            }
+
+            42% {
+                transform: scale(1.05);
+            }
+
+            70% {
+                transform: scale(1);
+            }
+        }
+
+        #noButton {
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* --- LETTER REVEAL --- */
+        .letter-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(213, 63, 140, 0.1);
+            max-width: 500px;
+            border: 1px solid #ffe4e6;
+            transform: translateY(30px) rotate(-1deg);
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .show-letter .letter-card {
+            transform: translateY(0) rotate(-1deg);
+            opacity: 1;
+        }
+
+        .letter-text {
+            font-family: 'Parisienne', cursive;
+            font-size: 1.9rem;
+            color: var(--pookie-dark);
+            line-height: 1.5;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        /* --- FLOATING ELEMENTS --- */
+        .floating-heart {
+            position: absolute;
+            pointer-events: none;
+            z-index: -1;
+            animation: floatUp 4s ease-in forwards;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(110vh) scale(0.5);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translateY(-20vh) scale(1.2) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 768px) {
+            #typewriter-text {
+                font-size: 1.1rem;
+                padding: 0 15px;
+            }
+
+            #valentineQuestion {
+                font-size: 1.8rem !important;
+                margin-bottom: 20px;
+            }
+
+            #imageDisplay {
+                width: 200px;
+                height: 200px;
+                margin-bottom: 15px;
+            }
+
+            #yesButton {
+                padding: 10px 30px;
+                font-size: 1.2rem;
+            }
+
+            #noButton {
+                padding: 8px 16px;
+                font-size: 1rem;
+            }
+
+            .letter-card {
+                width: 90%;
+                padding: 20px;
+                margin-top: 20px;
+            }
+
+            .letter-text {
+                font-size: 1.1rem;
+            }
+
+            #inputArea {
+                width: 90%;
+            }
+
+            #secretKey {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="lockScreen" class="flex flex-col items-center gap-8 z-10 transition-all duration-700">
+        <div id="typewriter-text"></div>
+        <div id="inputArea"
+            class="hidden flex flex-col items-center gap-5 scale-90 opacity-0 transition-all duration-700">
+            <p class="text-pink-600 font-medium text-lg">🌸 Enter the Secret Key, Princess:</p>
+            <input type="text" id="secretKey"
+                class="bg-white border-3 border-pink-200 p-3 px-6 rounded-full outline-none shadow-md focus:shadow-pink-200 transition-all text-center"
+                placeholder="Hint: Your nickname?">
+            <button onclick="checkKey()"
+                class="bg-[#ff85a2] text-white font-bold px-10 py-3 rounded-full shadow-lg hover:bg-[#ff5c8a] active:scale-95 transition-all">
+                UNLOCK 🎀
+            </button>
+            <p id="errorMsg" class="text-sm text-pink-400 hidden animate-bounce">Try again, beautiful! 🍯</p>
+        </div>
+    </div>
+
+    <main id="valentineContent">
+        <section class="flex flex-col items-center p-6 text-center">
+            <img id="imageDisplay" src="./images/image1.gif"
+                class="rounded-3xl h-[280px] w-[280px] object-cover shadow-2xl border-8 border-white mb-6" />
+            <h1 id="valentineQuestion" style="font-family: 'Dancing Script', cursive;"
+                class="text-5xl font-bold text-[#b83280] mb-8">
+                Theertha, will you be my Valentine? 🧸
+            </h1>
+            <div id="responseButtons" class="flex gap-6 pt-2 items-center relative min-h-[120px]">
+                <button id="yesButton" class="text-white px-10 py-4 rounded-full text-2xl font-bold shadow-xl">
+                    YES! 💖
+                </button>
+                <button id="noButton"
+                    class="bg-white text-pink-300 px-6 py-2 rounded-full text-lg font-semibold border-2 border-pink-100 shadow-sm">
+                    No
+                </button>
+            </div>
+            <p id="counterMsg" class="mt-6 text-pink-400 font-medium italic opacity-0 transition-opacity duration-500">
+            </p>
+        </section>
+    </main>
+
+    <div id="letterPage">
+        <div class="letter-card opacity-0">
+            <p class="letter-text">
+                To my dearest Sreecutie 👀💗, <br><br>
+                I don’t even know where to start because my heart feels soooo full when I think about you. Like… how did
+                I even get this lucky?? You walked into my life and suddenly everything feels warmer, brighter, more
+                aliveeeee. Even the most normal days feel special just because you exist in them.<br><br>
+                I love you in the quiet moments… I love you in the chaotic ones… I love you when we laugh, when we miss
+                each other, when things feel easy, and even when things feel haaaard. Especially then. Because loving
+                you isn’t just a feeling… it’s something deep, steady, unshakeable.<br><br>
+                No matter what comes our way — distance, problems, doubts, the whole world standing in front of us like
+                some giant obstacle — we’re going to make it. We will. I don’t care how tough it gets… how long it
+                takes… how many storms we have to walk through… I choose you again and again and agaaain.
+                Always.<br><br>
+                Because you’re not just someone I love… you’re someone I want beside me through everything. Through the
+                messy days, the scary days, the unbelievably happy days… all of it. We’ll grow together, fight together,
+                dream together, and build something so strong that nothing can break it.<br><br>
+                Soooo yeah… this is me promising you — I’m not going anywhere. I’m here. Fully. Completely. Hopelessly
+                in looove with you.<br><br>
+                I love you more than words can hold, more than time can measure, more than my silly heart can even
+                explain. And I’ll keep loving you… louder, deeper, stronger… every single day.<br><br>
+                Forever yours- Aniruddh
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const secretWord = "SREECUTIE";
+        const text = "Hi Theertha... I have a question for you! 💖";
+        let i = 0;
+
+        // Typewriter with smooth reveal
+        function typeWriter() {
+            if (i < text.length) {
+                document.getElementById("typewriter-text").innerHTML += text.charAt(i);
+                document.getElementById("typewriter-text").style.width = "100%";
+                i++;
+                setTimeout(typeWriter, 80);
+            } else {
+                document.getElementById("typewriter-text").style.borderRight = "none";
+                const inputArea = document.getElementById("inputArea");
+                inputArea.classList.remove("hidden");
+                setTimeout(() => {
+                    inputArea.style.opacity = "1";
+                    inputArea.style.transform = "scale(1)";
+                }, 100);
+            }
+        }
+        window.onload = typeWriter;
+
+        // Smooth transition to Valentine page
+        function checkKey() {
+            const input = document.getElementById("secretKey").value.toUpperCase();
+            if (input === secretWord) {
+                const lock = document.getElementById("lockScreen");
+                lock.classList.add("fade-exit");
+                setTimeout(() => {
+                    lock.style.display = "none";
+                    const val = document.getElementById("valentineContent");
+                    val.style.display = "flex";
+                    setTimeout(() => val.style.opacity = "1", 50);
+                    spawnHearts();
+                }, 800);
+            } else {
+                document.getElementById("errorMsg").classList.remove("hidden");
+                document.getElementById("secretKey").value = "";
+            }
+        }
+
+        const yesButton = document.getElementById('yesButton');
+        const noButton = document.getElementById('noButton');
+        const imageDisplay = document.getElementById('imageDisplay');
+        const valentineQuestion = document.getElementById('valentineQuestion');
+        const counterMsg = document.getElementById('counterMsg');
+
+        let noClickCount = 0;
+        const IMAGE_PATHS = ['./images/image1.gif', './images/image2.gif', './images/image3.gif', './images/image4.gif', './images/image5.gif', './images/image6.gif', './images/image7.gif'];
+
+        noButton.addEventListener('click', () => {
+            noClickCount++;
+            if (noClickCount <= 5) imageDisplay.src = IMAGE_PATHS[noClickCount];
+
+            noButton.textContent = `Press it 10 lakh times 💀`;
+            counterMsg.style.opacity = "1";
+            counterMsg.innerHTML = `Progress: ${noClickCount.toLocaleString()} / 1,000,000... keep going! 😉`;
+
+            // Smoother growth
+            const scale = 1 + (noClickCount * 0.4);
+
+            // Random jump with smooth motion
+            const x = Math.random() * (window.innerWidth - 200);
+            const y = Math.random() * (window.innerHeight - 200);
+            noButton.style.position = 'fixed';
+            noButton.style.left = x + 'px';
+            noButton.style.top = y + 'px';
+        });
+
+        yesButton.addEventListener('click', () => {
+            yesButton.style.animation = "none";
+            yesButton.style.transform = "scale(1.2)";
+            imageDisplay.src = IMAGE_PATHS[6];
+            valentineQuestion.innerHTML = "Yayyy!! You're my Pookie forever! 🎀🍭";
+            document.getElementById('responseButtons').style.opacity = '0';
+            counterMsg.style.opacity = '0';
+
+            const heart = confetti.shapeFromPath({ path: 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' });
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, shapes: [heart], colors: ['#ff85a2', '#fbb6ce', '#fff'] });
+
+            // 5 Second Wait -> Smooth Transition to Letter
+            setTimeout(() => {
+                const valContent = document.getElementById('valentineContent');
+                valContent.style.opacity = '0';
+                valContent.style.transform = 'translateY(-20px)';
+
+                setTimeout(() => {
+                    valContent.style.display = 'none';
+                    const letterPage = document.getElementById('letterPage');
+                    letterPage.style.display = 'flex';
+                    setTimeout(() => {
+                        letterPage.style.opacity = '1';
+                        letterPage.classList.add('show-letter');
+                        document.querySelector('.letter-card').style.opacity = '1';
+                    }, 50);
+                }, 1000);
+            }, 5000);
+        });
+
+        function spawnHearts() {
+            setInterval(() => {
+                const h = document.createElement('div');
+                h.className = 'floating-heart';
+                const emojis = ['🌸', '✨', '💖', '🎀', '🍭'];
+                h.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+                h.style.left = Math.random() * 100 + 'vw';
+                h.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                h.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                document.body.appendChild(h);
+                setTimeout(() => h.remove(), 4000);
+            }, 400);
+        }
+    </script>
+</body>
+
+</html>
