@@ -1,497 +1,394 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bharles Cabbage</title>
-    <!-- Three.js for 3D Art -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- Tailwind for Layout -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: VT323 for retro terminal look -->
-    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bharles Cabbage - Coming Soon</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    <style>
-        :root {
-            --hacker-green: #0f0;
-            --hacker-dark: #050505;
-            --hacker-dim: #003300;
-            --glitch-color-1: #0ff;
-            --glitch-color-2: #f0f;
-        }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1a472a 0%, #2d5a3f 50%, #1a472a 100%);
+    }
 
-        body {
-            margin: 0;
-            background-color: var(--hacker-dark);
-            color: var(--hacker-green);
-            font-family: 'VT323', monospace;
-            overflow-x: hidden;
-            /* Hide horizontal scroll from glitch effects */
-        }
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
 
-        /* --- UI & LAYOUT --- */
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            z-index: 1;
-            opacity: 0.8;
-            transition: opacity 0.5s ease;
-        }
+    .content {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #fff;
+      pointer-events: none;
+    }
 
-        .content-layer {
-            position: relative;
-            z-index: 10;
-            pointer-events: none;
-            /* Let clicks pass through to canvas primarily */
-        }
+    .content > * {
+      pointer-events: auto;
+    }
 
-        .section {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            pointer-events: auto;
-        }
+    h1 {
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #c8e6c9;
+      text-shadow:
+        0 0 20px rgba(144, 238, 144, 0.8),
+        0 0 40px rgba(144, 238, 144, 0.6),
+        0 0 60px rgba(144, 238, 144, 0.4),
+        3px 3px 0 rgba(0, 100, 0, 0.5);
+      animation: glow 2s ease-in-out infinite alternate;
+      margin-bottom: 0.5rem;
+    }
 
-        /* --- HACKER EFFECTS --- */
+    @keyframes glow {
+      from {
+        text-shadow:
+          0 0 20px rgba(144, 238, 144, 0.8),
+          0 0 40px rgba(144, 238, 144, 0.6),
+          0 0 60px rgba(144, 238, 144, 0.4),
+          3px 3px 0 rgba(0, 100, 0, 0.5);
+      }
+      to {
+        text-shadow:
+          0 0 30px rgba(144, 238, 144, 1),
+          0 0 60px rgba(144, 238, 144, 0.8),
+          0 0 90px rgba(144, 238, 144, 0.6),
+          4px 4px 0 rgba(0, 120, 0, 0.6);
+      }
+    }
 
-        /* 1. CRT Scanline Overlay */
-        .scanlines {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(to bottom,
-                    rgba(255, 255, 255, 0),
-                    rgba(255, 255, 255, 0) 50%,
-                    rgba(0, 0, 0, 0.2) 50%,
-                    rgba(0, 0, 0, 0.2));
-            background-size: 100% 4px;
-            z-index: 999;
-            pointer-events: none;
-        }
+    .subtitle {
+      font-size: clamp(1.5rem, 4vw, 3rem);
+      font-weight: 600;
+      color: #a5d6a7;
+      text-shadow: 2px 2px 4px rgba(0, 50, 0, 0.5);
+      margin-bottom: 2rem;
+      animation: float 3s ease-in-out infinite;
+    }
 
-        /* 2. Glitch Text Animation */
-        .glitch-wrapper {
-            position: relative;
-            display: inline-block;
-        }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
 
-        .glitch {
-            position: relative;
-            color: var(--hacker-green);
-            font-size: 4rem;
-            font-weight: bold;
-            text-shadow: 2px 2px var(--hacker-dim);
-        }
+    .cabbage-icon {
+      font-size: clamp(4rem, 10vw, 8rem);
+      margin-bottom: 1rem;
+      filter: drop-shadow(0 0 30px rgba(144, 238, 144, 0.8));
+      animation: rotate3d 8s linear infinite;
+      display: inline-block;
+    }
 
-        .glitch::before,
-        .glitch::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--hacker-dark);
-        }
+    @keyframes rotate3d {
+      0% { transform: rotateY(0deg) rotateX(10deg); }
+      100% { transform: rotateY(360deg) rotateX(10deg); }
+    }
 
-        .glitch::before {
-            left: 2px;
-            text-shadow: -1px 0 var(--glitch-color-1);
-            clip: rect(24px, 550px, 90px, 0);
-            animation: glitch-anim-2 3s infinite linear alternate-reverse;
-        }
+    .notify-form {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 2rem;
+    }
 
-        .glitch::after {
-            left: -2px;
-            text-shadow: -1px 0 var(--glitch-color-2);
-            clip: rect(85px, 550px, 140px, 0);
-            animation: glitch-anim 2.5s infinite linear alternate-reverse;
-        }
+    .notify-form input {
+      padding: 1rem 1.5rem;
+      font-size: 1.1rem;
+      border: 2px solid #81c784;
+      border-radius: 50px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      outline: none;
+      transition: all 0.3s ease;
+    }
 
-        @keyframes glitch-anim {
-            0% {
-                clip: rect(12px, 9999px, 15px, 0);
-            }
+    .notify-form input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
 
-            20% {
-                clip: rect(84px, 9999px, 49px, 0);
-            }
+    .notify-form input:focus {
+      border-color: #a5d6a7;
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 20px rgba(144, 238, 144, 0.5);
+    }
 
-            40% {
-                clip: rect(34px, 9999px, 12px, 0);
-            }
+    .notify-form button {
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow:
+        0 4px 15px rgba(0, 100, 0, 0.4),
+        0 0 20px rgba(144, 238, 144, 0.3);
+    }
 
-            60% {
-                clip: rect(2px, 9999px, 98px, 0);
-            }
+    .notify-form button:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow:
+        0 6px 25px rgba(0, 100, 0, 0.5),
+        0 0 40px rgba(144, 238, 144, 0.6);
+    }
 
-            80% {
-                clip: rect(54px, 9999px, 44px, 0);
-            }
+    .social-links {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
 
-            100% {
-                clip: rect(62px, 9999px, 13px, 0);
-            }
-        }
+    .social-links a {
+      font-size: 2rem;
+      color: #a5d6a7;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      filter: drop-shadow(0 2px 4px rgba(0, 50, 0, 0.5));
+    }
 
-        @keyframes glitch-anim-2 {
-            0% {
-                clip: rect(65px, 9999px, 100px, 0);
-            }
+    .social-links a:hover {
+      color: #c8e6c9;
+      transform: translateY(-5px) scale(1.2);
+      filter: drop-shadow(0 5px 15px rgba(144, 238, 144, 0.8));
+    }
 
-            25% {
-                clip: rect(12px, 9999px, 6px, 0);
-            }
+    .leaf-decoration {
+      position: fixed;
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0.3;
+    }
 
-            50% {
-                clip: rect(84px, 9999px, 92px, 0);
-            }
+    .leaf-1 { top: 10%; left: 5%; font-size: 8rem; animation: sway 4s ease-in-out infinite; }
+    .leaf-2 { top: 20%; right: 5%; font-size: 6rem; animation: sway 5s ease-in-out infinite reverse; }
+    .leaf-3 { bottom: 15%; left: 8%; font-size: 5rem; animation: sway 4.5s ease-in-out infinite; }
+    .leaf-4 { bottom: 10%; right: 10%; font-size: 7rem; animation: sway 5.5s ease-in-out infinite reverse; }
 
-            75% {
-                clip: rect(24px, 9999px, 34px, 0);
-            }
+    @keyframes sway {
+      0%, 100% { transform: rotate(-10deg); }
+      50% { transform: rotate(10deg); }
+    }
 
-            100% {
-                clip: rect(2px, 9999px, 80px, 0);
-            }
-        }
+    .scroll-indicator {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      color: #a5d6a7;
+      font-size: 2rem;
+      animation: bounce 2s ease-in-out infinite;
+    }
 
-        /* 3. Terminal Cursor */
-        .cursor::after {
-            content: '_';
-            animation: blink 1s step-end infinite;
-        }
-
-        @keyframes blink {
-            50% {
-                opacity: 0;
-            }
-        }
-
-        /* --- FOUNDER CARDS --- */
-        .founder-card {
-            background: rgba(0, 20, 0, 0.85);
-            border: 1px solid var(--hacker-green);
-            backdrop-filter: blur(4px);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .founder-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
-            background: rgba(0, 40, 0, 0.95);
-        }
-
-        .founder-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
-            transition: 0.5s;
-        }
-
-        .founder-card:hover::before {
-            left: 100%;
-        }
-
-        /* Utility */
-        .font-tech {
-            font-family: 'Share Tech Mono', monospace;
-        }
-
-        .text-glow {
-            text-shadow: 0 0 10px var(--hacker-green);
-        }
-    </style>
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(10px); }
+    }
+  </style>
 </head>
-
 <body>
+  <div id="canvas-container"></div>
 
-    <!-- Overlay Effects -->
-    <div class="scanlines"></div>
+  <div class="leaf-decoration leaf-1">🥬</div>
+  <div class="leaf-decoration leaf-2">🌿</div>
+  <div class="leaf-decoration leaf-3">🍃</div>
+  <div class="leaf-decoration leaf-4">🥬</div>
 
-    <!-- 3D Scene Background -->
-    <div id="canvas-container"></div>
+  <div class="content">
+    <div class="cabbage-icon">🥬</div>
+    <h1>Bharles Cabbage</h1>
+    <p class="subtitle">Something Fresh is Growing...</p>
+    <p style="font-size: 1.3rem; color: #81c784;">Coming Soon</p>
+  </div>
 
-    <!-- Main Content -->
-    <div class="content-layer">
+  <div class="scroll-indicator">🥬</div>
 
-        <!-- Welcome Section -->
-        <section id="welcome" class="section">
-            <div class="text-center">
-                <p class="text-xl md:text-2xl mb-2 font-tech opacity-80 cursor">> Cutting BHARLES_CABBAGE_OS...</p>
-                <h1 class="glitch md:text-8xl text-6xl mb-4" data-text="BHARLES CABBAGE">BHARLES CABBAGE</h1>
-                <p
-                    class="text-xl md:text-3xl mt-4 max-w-2xl mx-auto border-t border-b border-green-800 py-4 bg-black/50">
-                    WELCOME TO THE WORLD OF BHARLES CABBAGE
-                </p>
-                <div class="mt-12 animate-bounce">
-                    <p class="text-sm tracking-widest">SCROLL_FOR_MORE</p>
-                    <i class="fas fa-chevron-down text-2xl mt-2"></i>
-                </div>
-            </div>
-        </section>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // Three.js 3D Scene
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 
-        <!-- Founders Section -->
-        <section id="founders" class="section">
-            <div class="container mx-auto px-4 max-w-5xl">
-                <div class="mb-16 text-center">
-                    <h2
-                        class="text-5xl md:text-6xl font-bold mb-4 text-glow underline decoration-green-700 decoration-4 underline-offset-8">
-                        FOUNDERS
-                    </h2>
-                    <p class="font-tech text-green-400 text-lg">// ACCESS LEVEL: ADMIN //</p>
-                </div>
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+    // Create floating cabbage leaves
+    const leaves = [];
+    const leafGeometries = [];
 
-                    <!-- Founder 1 -->
-                    <div class="founder-card p-8 rounded-sm">
-                        <div class="flex items-center justify-between mb-6 border-b border-green-800 pb-2">
-                            <span class="bg-green-900 text-green-100 px-2 py-1 text-xs">STATUS: COOKING</span>
-                            <i class="fas fa-user-secret text-2xl opacity-70"></i>
-                        </div>
-                        <div class="text-center mb-6">
-                            <!-- Avatar Placeholder (Font Awesome) -->
-                            <div
-                                class="w-24 h-24 mx-auto bg-black border-2 border-green-500 rounded-full flex items-center justify-center mb-4">
-                                <img src="https://blitzhack.xyz/assets/images/member_logo/B3arnoob.webp" alt="icon"
-                                    class="w-16 h-16">
-                            </div>
-                            <h3 class="text-4xl font-bold text-glow">Kaashinath</h3>
-                            <p class="text-xl font-tech text-green-400 mt-1">{ B34RN00B }</p>
-                        </div>
-                        <div class="font-mono text-sm bg-black/40 p-3 rounded border border-green-900">
-                            <p>> ROLE: Founder</p>
-                            <p>> Description : If it's black, fight back. If it's brown, lay down. If it's white, say
-                                goodnight.</p>
-                        </div>
-                    </div>
+    // Create multiple leaf geometries for variety
+    for (let i = 0; i < 5; i++) {
+      const shape = new THREE.Shape();
+      const width = 0.5 + Math.random() * 0.5;
+      const height = 1 + Math.random() * 0.5;
 
-                    <!-- Founder 2 -->
-                    <div class="founder-card p-8 rounded-sm">
-                        <div class="flex items-center justify-between mb-6 border-b border-green-800 pb-2">
-                            <span class="bg-green-900 text-green-100 px-2 py-1 text-xs">STATUS: WATCHING</span>
-                            <i class="fas fa-gavel text-2xl opacity-70"></i>
-                        </div>
-                        <div class="text-center mb-6">
-                            <!-- Avatar Placeholder (Font Awesome) -->
-                            <div
-                                class="w-24 h-24 mx-auto bg-black border-2 border-green-500 rounded-full flex items-center justify-center mb-4">
-                                <img src="https://iili.io/fqbmxhx.jpg" alt="icon" class="w-16 h-16">
-                            </div>
-                            <h3 class="text-4xl font-bold text-glow">Aniruddh</h3>
-                            <p class="text-xl font-tech text-green-400 mt-1">{ TheJudge }</p>
-                        </div>
-                        <div class="font-mono text-sm bg-black/40 p-3 rounded border border-green-900">
-                            <p>> ROLE: Founder</p>
-                            <p>> Description : He never sleeps, The Judge. He also says he'll never die</p>
-                        </div>
-                    </div>
+      shape.moveTo(0, 0);
+      shape.quadraticCurveTo(width, height * 0.3, width, height * 0.5);
+      shape.quadraticCurveTo(width * 0.5, height, 0, height);
+      shape.quadraticCurveTo(-width * 0.5, height, -width, height * 0.5);
+      shape.quadraticCurveTo(-width, height * 0.3, 0, 0);
 
-                </div>
-            </div>
+      const geometry = new THREE.ShapeGeometry(shape);
+      leafGeometries.push(geometry);
+    }
 
-            <footer class="mt-20 text-center opacity-50 text-xs">
-                <p>BHARLES_CABBAGE_OS v1.0 // SYSTEM SECURE</p>
-            </footer>
-        </section>
+    const leafMaterial = new THREE.MeshPhongMaterial({
+      color: 0x66bb6a,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.8,
+      shininess: 100
+    });
 
-    </div>
+    // Create 50 floating leaves
+    for (let i = 0; i < 50; i++) {
+      const geometry = leafGeometries[Math.floor(Math.random() * leafGeometries.length)];
+      const leaf = new THREE.Mesh(geometry, leafMaterial);
 
-    <!-- Three.js Logic -->
-    <script>
-        const initThreeJS = () => {
-            const container = document.getElementById('canvas-container');
+      leaf.position.x = (Math.random() - 0.5) * 30;
+      leaf.position.y = (Math.random() - 0.5) * 30;
+      leaf.position.z = (Math.random() - 0.5) * 20 - 5;
 
-            // 1. Scene Setup
-            const scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x050505, 0.04);
+      leaf.rotation.x = Math.random() * Math.PI;
+      leaf.rotation.y = Math.random() * Math.PI;
+      leaf.rotation.z = Math.random() * Math.PI;
 
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 12;
+      leaf.userData = {
+        rotSpeedX: (Math.random() - 0.5) * 0.02,
+        rotSpeedY: (Math.random() - 0.5) * 0.02,
+        rotSpeedZ: (Math.random() - 0.5) * 0.02,
+        floatSpeed: 0.005 + Math.random() * 0.01,
+        floatOffset: Math.random() * Math.PI * 2,
+        originalY: leaf.position.y
+      };
 
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            container.appendChild(renderer.domElement);
+      scene.add(leaf);
+      leaves.push(leaf);
+    }
 
-            // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            dirLight.position.set(5, 10, 7);
-            scene.add(dirLight);
+    // Create 3D cabbage spheres
+    const cabbages = [];
+    const cabbageGeometry = new THREE.IcosahedronGeometry(1, 2);
+    const cabbageMaterial = new THREE.MeshPhongMaterial({
+      color: 0x81c784,
+      shininess: 80,
+      flatShading: true
+    });
 
-            // Group for all voxels
-            const voxelGroup = new THREE.Group();
-            scene.add(voxelGroup);
+    for (let i = 0; i < 5; i++) {
+      const cabbage = new THREE.Mesh(cabbageGeometry, cabbageMaterial);
+      cabbage.position.x = (Math.random() - 0.5) * 20;
+      cabbage.position.y = (Math.random() - 0.5) * 20;
+      cabbage.position.z = (Math.random() - 0.5) * 10 - 8;
 
-            // 2. VOXEL ENGINE
-            const imageUrl = 'image_4b8bf6.png'; // Using the latest upload
+      cabbage.userData = {
+        rotSpeed: 0.005 + Math.random() * 0.01,
+        floatSpeed: 0.003 + Math.random() * 0.005,
+        floatOffset: Math.random() * Math.PI * 2,
+        originalY: cabbage.position.y,
+        scale: 0.5 + Math.random() * 1
+      };
 
-            // We use an HTML Image to read pixel data
-            const img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.src = imageUrl;
+      cabbage.scale.setScalar(cabbage.userData.scale);
+      scene.add(cabbage);
+      cabbages.push(cabbage);
+    }
 
-            img.onload = () => {
-                // Create a canvas to read pixel data
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+    scene.add(ambientLight);
 
-                // Resolution: How many cubes wide?
-                // 48x48 ensures we have ~2000 cubes, which is performant and looks cool
-                const size = 48;
-                canvas.width = size;
-                canvas.height = size;
+    const pointLight1 = new THREE.PointLight(0x81c784, 1, 100);
+    pointLight1.position.set(10, 10, 10);
+    scene.add(pointLight1);
 
-                // Draw image to canvas
-                ctx.drawImage(img, 0, 0, size, size);
-                const data = ctx.getImageData(0, 0, size, size).data;
+    const pointLight2 = new THREE.PointLight(0x4caf50, 0.8, 100);
+    pointLight2.position.set(-10, -10, 5);
+    scene.add(pointLight2);
 
-                // Use InstancedMesh for high performance
-                const geometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-                const material = new THREE.MeshStandardMaterial({
-                    roughness: 0.4,
-                    metalness: 0.6
-                });
+    const pointLight3 = new THREE.PointLight(0xa5d6a7, 0.6, 100);
+    pointLight3.position.set(0, 15, -5);
+    scene.add(pointLight3);
 
-                // Count non-transparent pixels
-                let count = 0;
-                for (let i = 0; i < data.length; i += 4) {
-                    if (data[i + 3] > 10) count++; // Alpha check
-                }
+    // Camera position
+    camera.position.z = 15;
 
-                const mesh = new THREE.InstancedMesh(geometry, material, count);
-                voxelGroup.add(mesh);
+    // Mouse interaction
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetX = 0;
+    let targetY = 0;
 
-                const dummy = new THREE.Object3D();
-                const color = new THREE.Color();
-                let index = 0;
+    document.addEventListener('mousemove', (event) => {
+      mouseX = (event.clientX - window.innerWidth / 2) * 0.001;
+      mouseY = (event.clientY - window.innerHeight / 2) * 0.001;
+    });
 
-                for (let y = 0; y < size; y++) {
-                    for (let x = 0; x < size; x++) {
-                        const i = (y * size + x) * 4;
-                        const alpha = data[i + 3];
+    // Animation loop
+    let time = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.01;
 
-                        if (alpha > 10) {
-                            // Position
-                            // Center the grid: (x - size/2, -(y - size/2))
-                            dummy.position.set(
-                                (x - size / 2) * 0.9,
-                                -(y - size / 2) * 0.9,
-                                0
-                            );
+      targetX += (mouseX - targetX) * 0.05;
+      targetY += (mouseY - targetY) * 0.05;
 
-                            // Random Z depth for "glitchy 3D" look
-                            dummy.position.z = (Math.random() - 0.5) * 2;
+      camera.position.x += (targetX * 5 - camera.position.x) * 0.05;
+      camera.position.y += (-targetY * 5 - camera.position.y) * 0.05;
+      camera.lookAt(scene.position);
 
-                            dummy.updateMatrix();
-                            mesh.setMatrixAt(index, dummy.matrix);
+      // Animate leaves
+      leaves.forEach((leaf, i) => {
+        leaf.rotation.x += leaf.userData.rotSpeedX;
+        leaf.rotation.y += leaf.userData.rotSpeedY;
+        leaf.rotation.z += leaf.userData.rotSpeedZ;
+        leaf.position.y = leaf.userData.originalY + Math.sin(time + leaf.userData.floatOffset) * 2;
+      });
 
-                            // Color
-                            color.setRGB(data[i] / 255, data[i + 1] / 255, data[i + 2] / 255);
-                            mesh.setColorAt(index, color);
+      // Animate cabbages
+      cabbages.forEach((cabbage) => {
+        cabbage.rotation.y += cabbage.userData.rotSpeed;
+        cabbage.rotation.x += cabbage.userData.rotSpeed * 0.5;
+        cabbage.position.y = cabbage.userData.originalY + Math.sin(time * 2 + cabbage.userData.floatOffset) * 1.5;
+      });
 
-                            index++;
-                        }
-                    }
-                }
-                mesh.instanceMatrix.needsUpdate = true;
-                mesh.instanceColor.needsUpdate = true;
-            };
+      renderer.render(scene, camera);
+    }
 
-            // 3. Grid Floor
-            const gridHelper = new THREE.GridHelper(50, 50, 0x00ff00, 0x002200);
-            gridHelper.position.y = -8;
-            scene.add(gridHelper);
+    animate();
 
-            // 4. Random floating data cubes (Background noise)
-            const bgGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-            const bgMat = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-            const bgParticles = [];
-
-            for (let i = 0; i < 100; i++) {
-                const mesh = new THREE.Mesh(bgGeo, bgMat);
-                mesh.position.set(
-                    (Math.random() - 0.5) * 40,
-                    (Math.random() - 0.5) * 40,
-                    (Math.random() - 0.5) * 20 - 5
-                );
-                scene.add(mesh);
-                bgParticles.push({
-                    mesh: mesh,
-                    speed: Math.random() * 0.02
-                });
-            }
-
-            // 5. Animation Loop
-            const clock = new THREE.Clock();
-
-            const animate = () => {
-                requestAnimationFrame(animate);
-                const time = clock.getElapsedTime();
-
-                // Rotate the Voxel Art slightly
-                voxelGroup.rotation.y = Math.sin(time * 0.3) * 0.2;
-                voxelGroup.rotation.x = Math.cos(time * 0.2) * 0.1;
-
-                // Animate background particles
-                bgParticles.forEach(p => {
-                    p.mesh.rotation.x += p.speed;
-                    p.mesh.rotation.y += p.speed;
-                });
-
-                // SCROLL INTERACTION
-                const scrollY = window.scrollY;
-                const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-                const scrollFraction = Math.min(scrollY / maxScroll, 1);
-
-                // Move Camera
-                // Start: z=12, y=0
-                // End: z=20, y=-5
-                const targetZ = 12 + (scrollFraction * 15);
-                const targetY = 0 - (scrollFraction * 5);
-
-                camera.position.z += (targetZ - camera.position.z) * 0.05;
-                camera.position.y += (targetY - camera.position.y) * 0.05;
-
-                // Fade out slightly
-                const opacity = 1 - (scrollFraction * 0.9);
-                container.style.opacity = Math.max(0.1, opacity);
-
-                renderer.render(scene, camera);
-            };
-
-            animate();
-
-            // Handle Resize
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
-        };
-
-        window.onload = initThreeJS;
-    </script>
+    // Handle resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
 </body>
-
 </html>
